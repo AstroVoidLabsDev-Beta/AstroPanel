@@ -28,7 +28,7 @@ Runs on **Port 3000** by default.
 Clone the repo and install dependencies:
 
 ```bash
-git clone https://github.com/yourusername/panel-starter.git
+git clone https://github.com/AstroVoidLabsDev-Beta/AstroPanel
 cd panel-starter
 ```
 
