@@ -1,19 +1,22 @@
 # 🌌 AstroPanel
 
-AstroPanel is a custom hosting panel inspired by Pterodactyl, built with **Node.js + Express**.  
-It features a Minecraft-themed login/register screen with a video background and a simple dashboard.
+AstroPanel is a custom Minecraft hosting panel inspired by TeryxLabs.  
+It features **Login/Register**, **Dashboard placeholders (Users, Servers, Nodes, Admin Panel)**, and a **Minecraft video background**.
 
 ---
 
 ## 🚀 Features
-- Login & Register page with Minecraft video background
-- Dashboard placeholders (Users, Servers, Nodes, Admin)
+- Login & Register page
+- Dashboard placeholders: Users, Servers, Nodes, Admin
+- Minecraft video background
 - Runs on **port 3000**
 - One-command start: `node .`
 
 ---
 
 ## 📦 Installation
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/your-username/AstroPanel.git
@@ -23,29 +26,42 @@ npm install
 
 ---
 
-## ▶️ Run Panel
+## ▶️ Running the Panel
 
 ```bash
 node .
 ```
 
-AstroPanel will run at:  
-👉 [http://localhost:3000](http://localhost:3000)
+Visit: [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## 📂 Project Structure
+
 ```
 AstroPanel/
 ├── index.js          # Main server file
 ├── package.json      # Dependencies & start script
-├── public/
-│   ├── index.html    # Frontend (login page)
-│   ├── style.css     # Styling
-│   └── minecraft-bg.mp4  # Background video (add manually)
+├── config.json       # Panel configuration
+└── public/
+    ├── index.html    # Login/Register page
+    ├── dashboard.html # Dashboard placeholder
+    ├── style.css     # Styles
+    └── minecraft-bg.mp4  # Add manually
 ```
 
-⚠️ Add your own `minecraft-bg.mp4` in `/public/` (4K/8K recommended).
+---
+
+## ⚙️ Configuration
+
+`config.json` allows basic panel settings:
+
+```json
+{
+  "panelName": "AstroPanel",
+  "theme": "dark"
+}
+```
 
 ---
 
@@ -58,3 +74,5 @@ AstroPanel/
 
 ## 📜 License
 MIT
+
+---
