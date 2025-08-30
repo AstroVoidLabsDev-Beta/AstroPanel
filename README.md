@@ -1,78 +1,34 @@
-# 🌌 AstroPanel
 
-AstroPanel is a custom Minecraft hosting panel inspired by TeryxLabs.  
-It features **Login/Register**, **Dashboard placeholders (Users, Servers, Nodes, Admin Panel)**, and a **Minecraft video background**.
+<h1 align="center">AstroPanel</h1>
+## Overview
 
----
+## Installation
+1. Clone the repository or download:
+`git clone https://github.com/AstroVoidLabsDev-Beta/AstroPanel`
 
-## 🚀 Features
-- Login & Register page
-- Dashboard placeholders: Users, Servers, Nodes, Admin
-- Minecraft video background
-- Runs on **port 3000**
-- One-command start: `node .`
+` curl -sL https://deb.nodesource.com/setup_23.x | sudo bash - `
 
----
+`apt-get install nodejs git`
 
-## 📦 Installation
+3. go to panel directory:
+`cd v4panel`
 
-Clone the repository:
+4. Install some importent:
+`apt install rar -y && unzip panel.rar`
 
-```bash
-git clone https://github.com/AstroVoidLabsDev-Beta/AstroPanel
-cd AstroPanel
-npm install
-```
+5. Install dependencies:
+`npm install && npm run seed && npm run createUser`
 
----
+6. Start the Panel:
+`node . # or use pm2 to keep it online`
 
-## ▶️ Running the Panel
+## Contributing
+Contributions to enhance the functionality or performance of the DracoPanel are encouraged. Please submit pull requests for any enhancements.
 
-```bash
-node .
-```
+## License
+(c) 2025 AstroVoidLabs . This software is licensed under the MIT License.
 
-Visit: [http://localhost:3000](http://localhost:3000)
 
----
 
-## 📂 Project Structure
 
-```
-AstroPanel/
-├── index.js          # Main server file
-├── package.json      # Dependencies & start script
-├── config.json       # Panel configuration
-└── public/
-    ├── index.html    # Login/Register page
-    ├── dashboard.html # Dashboard placeholder
-    ├── style.css     # Styles
-    └── minecraft-bg.mp4  # Add manually
-```
-
----
-
-## ⚙️ Configuration
-
-`config.json` allows basic panel settings:
-
-```json
-{
-  "panelName": "AstroPanel",
-  "theme": "dark"
-}
-```
-
----
-
-## 🛠 Tech Stack
-- Node.js
-- Express.js
-- HTML / CSS / JS
-
----
-
-## 📜 License
-MIT
-
----
+- made by AstroVoidLabs
