@@ -11,7 +11,7 @@
 `apt-get install nodejs git`
 
 3. go to panel directory:
-`cd v4panel`
+`cd AstroPanel`
 
 4. Install some importent:
 `apt install rar -y && unzip panel.rar`
