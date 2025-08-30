@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+.bg-video-wrap{ position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+.bg-video-wrap video{ width: 100%; height: 100%; object-fit: cover; }
+
+.overlay{ position: fixed; inset:0; z-index: 0; background: rgba(0,0,0,0.35); }
+.container-center{ position: relative; z-index: 10; min-height: 100vh; display:flex; align-items:center; justify-content:center; }
