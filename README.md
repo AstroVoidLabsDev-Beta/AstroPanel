@@ -29,12 +29,14 @@ Clone the repo and install dependencies:
 
 ```bash
 git clone https://github.com/AstroVoidLabsDev-Beta/AstroPanel
+cd AstroPanel
 cd panel-starter
 ```
 
 ### 1️⃣ Backend
 ```bash
 cd backend
+apt install npm -y
 npm install
 npm start
 ```
