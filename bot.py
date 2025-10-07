@@ -36,11 +36,11 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('AstroVoidHost_bot.log'),
+        logging.FileHandler('crashnodes_bot.log'),
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger('AstroVoidHostBot')
+logger = logging.getLogger('CrashNodesBot')
 
 # Load environment variables
 load_dotenv()
@@ -49,14 +49,14 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 ADMIN_IDS = {int(id_) for id_ in os.getenv('ADMIN_IDS', '1405778722732376176').split(',') if id_.strip()}
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID', '1405778722732376176'))
-WATERMARK = "AstroVoidHost VPS Service"
-WELCOME_MESSAGE = "Welcome To AstroVoidHost! Get Started With Us!"
+WATERMARK = "CrashNodes VPS Service"
+WELCOME_MESSAGE = "Welcome To CrashNodes! Get Started With Us!"
 MAX_VPS_PER_USER = int(os.getenv('MAX_VPS_PER_USER', '3'))
 DEFAULT_OS_IMAGE = os.getenv('DEFAULT_OS_IMAGE', 'ubuntu:22.04')
 DOCKER_NETWORK = os.getenv('DOCKER_NETWORK', 'bridge')
 MAX_CONTAINERS = int(os.getenv('MAX_CONTAINERS', '100'))
-DB_FILE = 'AstroVoidHost.db'
-BACKUP_FILE = 'AstroVoidHost_backup.pkl'
+DB_FILE = 'crashnodes.db'
+BACKUP_FILE = 'crashnodes_backup.pkl'
 
 # Known miner process names/patterns
 MINER_PATTERNS = [
@@ -96,11 +96,11 @@ RUN mkdir /var/run/sshd && \\
 RUN systemctl enable ssh && \\
     systemctl enable docker
 
-# AstroVoidHost customization
+# CrashNodes customization
 RUN echo '{welcome_message}' > /etc/motd && \\
     echo 'echo "{welcome_message}"' >> /home/{username}/.bashrc && \\
     echo '{watermark}' > /etc/machine-info && \\
-    echo 'AstroVoidHost-{vps_id}' > /etc/hostname
+    echo 'crashnodes-{vps_id}' > /etc/hostname
 
 # Install additional useful packages
 RUN apt-get update && \\
@@ -366,7 +366,7 @@ class Database:
         self.conn.close()
 
 # Initialize bot with command prefix '/'
-class AstroVoidHostBot(commands.Bot):
+class CrashNodesBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.db = Database(DB_FILE)
@@ -621,7 +621,7 @@ async def build_custom_image(vps_id, username, root_password, user_password, bas
             f.write(dockerfile_content)
         
         # Build the image
-        image_tag = f"AstroVoidHost/{vps_id.lower()}:latest"
+        image_tag = f"crashnodes/{vps_id.lower()}:latest"
         build_process = await asyncio.create_subprocess_exec(
             "docker", "build", "-t", image_tag, temp_dir,
             stdout=asyncio.subprocess.PIPE,
@@ -646,7 +646,7 @@ async def build_custom_image(vps_id, username, root_password, user_password, bas
             logger.error(f"Error cleaning up temp directory: {e}")
 
 async def setup_container(container_id, status_msg, memory, username, vps_id=None, use_custom_image=False):
-    """Enhanced container setup with AstroVoidHost customization"""
+    """Enhanced container setup with CrashNodes customization"""
     try:
         # Ensure container is running
         if isinstance(status_msg, discord.Interaction):
@@ -709,11 +709,11 @@ async def setup_container(container_id, status_msg, memory, username, vps_id=Non
                 if not success:
                     raise Exception(f"Failed to setup user: {output}")
 
-        # Set AstroVoidHost customization
+        # Set CrashNodes customization
         if isinstance(status_msg, discord.Interaction):
-            await status_msg.followup.send("🎨 Setting up AstroVoidHost customization...", ephemeral=True)
+            await status_msg.followup.send("🎨 Setting up CrashNodes customization...", ephemeral=True)
         else:
-            await status_msg.edit(content="🎨 Setting up AstroVoidHost customization...")
+            await status_msg.edit(content="🎨 Setting up CrashNodes customization...")
             
         # Create welcome message file
         welcome_cmd = f"echo '{WELCOME_MESSAGE}' > /etc/motd && echo 'echo \"{WELCOME_MESSAGE}\"' >> /home/{username}/.bashrc"
@@ -724,7 +724,7 @@ async def setup_container(container_id, status_msg, memory, username, vps_id=Non
         # Set hostname and watermark
         if not vps_id:
             vps_id = generate_vps_id()
-        hostname_cmd = f"echo 'AstroVoidHost-{vps_id}' > /etc/hostname && hostname AstroVoidHost-{vps_id}"
+        hostname_cmd = f"echo 'crashnodes-{vps_id}' > /etc/hostname && hostname crashnodes-{vps_id}"
         success, output = await run_docker_command(container_id, ["bash", "-c", hostname_cmd])
         if not success:
             raise Exception(f"Failed to set hostname: {output}")
@@ -761,9 +761,9 @@ async def setup_container(container_id, status_msg, memory, username, vps_id=Non
                 logger.warning(f"Security setup command failed: {cmd} - {output}")
 
         if isinstance(status_msg, discord.Interaction):
-            await status_msg.followup.send("✅ AstroVoidHost VPS setup completed successfully!", ephemeral=True)
+            await status_msg.followup.send("✅ CrashNodes VPS setup completed successfully!", ephemeral=True)
         else:
-            await status_msg.edit(content="✅ AstroVoidHost VPS setup completed successfully!")
+            await status_msg.edit(content="✅ CrashNodes VPS setup completed successfully!")
             
         return True, ssh_password, vps_id
     except Exception as e:
@@ -778,7 +778,7 @@ async def setup_container(container_id, status_msg, memory, username, vps_id=Non
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-bot = AstroVoidHostBot(command_prefix='/', intents=intents, help_command=None)
+bot = CrashNodesBot(command_prefix='/', intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
@@ -799,7 +799,7 @@ async def on_ready():
                     logger.error(f"Error starting container: {e}")
     
     try:
-        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="AstroVoid Host Vps"))
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="CRASHNODES VPS"))
         synced_commands = await bot.tree.sync()
         logger.info(f"Synced {len(synced_commands)} slash commands")
     except Exception as e:
@@ -809,7 +809,7 @@ async def on_ready():
 async def show_commands(ctx):
     """Show all available commands"""
     try:
-        embed = discord.Embed(title="🤖 AstroVoidHost VPS Bot Commands", color=discord.Color.blue())
+        embed = discord.Embed(title="🤖 CrashNodes VPS Bot Commands", color=discord.Color.blue())
         
         # User commands
         embed.add_field(name="User Commands", value="""
@@ -923,7 +923,7 @@ async def list_admins(ctx):
     disk="Disk space in GB",
     owner="User who will own the VPS",
     os_image="OS image to use",
-    use_custom_image="Use custom AstroVoidHost image (recommended)"
+    use_custom_image="Use custom CrashNodes image (recommended)"
 )
 async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: discord.Member, 
                            os_image: str = DEFAULT_OS_IMAGE, use_custom_image: bool = True):
@@ -967,7 +967,7 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
             await ctx.send(f"❌ {owner.mention} already has the maximum number of VPS instances ({bot.db.get_setting('max_vps_per_user')})", ephemeral=True)
             return
 
-        status_msg = await ctx.send("🚀 Creating AstroVoidHost VPS instance... This may take a few minutes.")
+        status_msg = await ctx.send("🚀 Creating CrashNodes VPS instance... This may take a few minutes.")
 
         memory_bytes = memory * 1024 * 1024 * 1024
         vps_id = generate_vps_id()
@@ -990,14 +990,14 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                     image_tag,
                     detach=True,
                     privileged=True,
-                    hostname=f"AstroVoidHost-{vps_id}",
+                    hostname=f"crashnodes-{vps_id}",
                     mem_limit=memory_bytes,
                     cpu_period=100000,
                     cpu_quota=int(cpu * 100000),
                     cap_add=["ALL"],
                     network=DOCKER_NETWORK,
                     volumes={
-                        f'AstroVoidHost-{vps_id}': {'bind': '/data', 'mode': 'rw'}
+                        f'crashnodes-{vps_id}': {'bind': '/data', 'mode': 'rw'}
                     },
                     restart_policy={"Name": "always"}
                 )
@@ -1011,7 +1011,7 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                     os_image,
                     detach=True,
                     privileged=True,
-                    hostname=f"AstroVoidHost-{vps_id}",
+                    hostname=f"crashnodes-{vps_id}",
                     mem_limit=memory_bytes,
                     cpu_period=100000,
                     cpu_quota=int(cpu * 100000),
@@ -1020,7 +1020,7 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                     tty=True,
                     network=DOCKER_NETWORK,
                     volumes={
-                        f'AstroVoidHost-{vps_id}': {'bind': '/data', 'mode': 'rw'}
+                        f'crashnodes-{vps_id}': {'bind': '/data', 'mode': 'rw'}
                     },
                     restart_policy={"Name": "always"}
                 )
@@ -1030,7 +1030,7 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                     DEFAULT_OS_IMAGE,
                     detach=True,
                     privileged=True,
-                    hostname=f"AstroVoidHost-{vps_id}",
+                    hostname=f"crashnodes-{vps_id}",
                     mem_limit=memory_bytes,
                     cpu_period=100000,
                     cpu_quota=int(cpu * 100000),
@@ -1039,13 +1039,13 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                     tty=True,
                     network=DOCKER_NETWORK,
                     volumes={
-                        f'AstroVoidHost-{vps_id}': {'bind': '/data', 'mode': 'rw'}
+                        f'crashnodes-{vps_id}': {'bind': '/data', 'mode': 'rw'}
                     },
                     restart_policy={"Name": "always"}
                 )
                 os_image = DEFAULT_OS_IMAGE
 
-        await status_msg.edit(content="🔧 Container created. Setting up AstroVoidHost environment...")
+        await status_msg.edit(content="🔧 Container created. Setting up CrashNodes environment...")
         await asyncio.sleep(5)
 
         setup_success, ssh_password, _ = await setup_container(
@@ -1095,7 +1095,7 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
         bot.db.add_vps(vps_data)
         
         try:
-            embed = discord.Embed(title="🎉 AstroVoidHost VPS Creation Successful", color=discord.Color.green())
+            embed = discord.Embed(title="🎉 CrashNodes VPS Creation Successful", color=discord.Color.green())
             embed.add_field(name="🆔 VPS ID", value=vps_id, inline=True)
             embed.add_field(name="💾 Memory", value=f"{memory}GB", inline=True)
             embed.add_field(name="⚡ CPU", value=f"{cpu} cores", inline=True)
@@ -1106,10 +1106,10 @@ async def create_vps_command(ctx, memory: int, cpu: int, disk: int, owner: disco
                 embed.add_field(name="🔑 Root Password", value=f"||{root_password}||", inline=False)
             embed.add_field(name="🔒 Tmate Session", value=f"```{ssh_session_line}```", inline=False)
             embed.add_field(name="🔌 Direct SSH", value=f"```ssh {username}@<server-ip>```", inline=False)
-            embed.add_field(name="ℹ️ Note", value="This is a AstroVoidHost VPS instance. You can install and configure additional packages as needed.", inline=False)
+            embed.add_field(name="ℹ️ Note", value="This is a CrashNodes VPS instance. You can install and configure additional packages as needed.", inline=False)
             
             await owner.send(embed=embed)
-            await status_msg.edit(content=f"✅ AstroVoidHost VPS creation successful! VPS has been created for {owner.mention}. Check your DMs for connection details.")
+            await status_msg.edit(content=f"✅ CrashNodes VPS creation successful! VPS has been created for {owner.mention}. Check your DMs for connection details.")
         except discord.Forbidden:
             await status_msg.edit(content=f"❌ I couldn't send a DM to {owner.mention}. Please ask them to enable DMs from server members.")
             
@@ -1134,7 +1134,7 @@ async def list_vps(ctx):
             await ctx.send("You don't have any VPS instances.", ephemeral=True)
             return
 
-        embed = discord.Embed(title="Your AstroVoidHost VPS Instances", color=discord.Color.blue())
+        embed = discord.Embed(title="Your CrashNodes VPS Instances", color=discord.Color.blue())
         
         for vps in user_vps:
             try:
@@ -1179,7 +1179,7 @@ async def admin_list_vps(ctx):
             await ctx.send("No VPS instances found.", ephemeral=True)
             return
 
-        embed = discord.Embed(title="All AstroVoidHost VPS Instances", color=discord.Color.blue())
+        embed = discord.Embed(title="All CrashNodes VPS Instances", color=discord.Color.blue())
         valid_vps_count = 0
         
         for token, vps in all_vps.items():
@@ -1257,7 +1257,7 @@ async def delete_vps(ctx, vps_id: str):
         
         bot.db.remove_vps(token)
         
-        await ctx.send(f"✅ AstroVoidHost VPS {vps_id} has been deleted successfully!")
+        await ctx.send(f"✅ CrashNodes VPS {vps_id} has been deleted successfully!")
     except Exception as e:
         logger.error(f"Error in delete_vps: {e}")
         await ctx.send(f"❌ Error deleting VPS: {str(e)}")
@@ -1299,7 +1299,7 @@ async def connect_vps(ctx, token: str):
 
         bot.db.update_vps(token, {"tmate_session": ssh_session_line})
         
-        embed = discord.Embed(title="AstroVoidHost VPS Connection Details", color=discord.Color.blue())
+        embed = discord.Embed(title="CrashNodes VPS Connection Details", color=discord.Color.blue())
         embed.add_field(name="Username", value=vps["username"], inline=True)
         embed.add_field(name="SSH Password", value=f"||{vps.get('password', 'Not set')}||", inline=True)
         embed.add_field(name="Tmate Session", value=f"```{ssh_session_line}```", inline=False)
@@ -1307,14 +1307,14 @@ async def connect_vps(ctx, token: str):
 1. Copy the Tmate session command
 2. Open your terminal
 3. Paste and run the command
-4. You will be connected to your AstroVoidHost VPS
+4. You will be connected to your CrashNodes VPS
 
 Or use direct SSH:
 ```ssh {username}@<server-ip>```
 """.format(username=vps["username"]), inline=False)
         
         await ctx.author.send(embed=embed)
-        await ctx.send("✅ Connection details sent to your DMs! Use the Tmate command to connect to your AstroVoidHost VPS.", ephemeral=True)
+        await ctx.send("✅ Connection details sent to your DMs! Use the Tmate command to connect to your CrashNodes VPS.", ephemeral=True)
         
     except discord.Forbidden:
         await ctx.send("❌ I couldn't send you a DM. Please enable DMs from server members.", ephemeral=True)
@@ -1444,7 +1444,7 @@ async def admin_stats(ctx):
         # Get system stats
         stats = bot.system_stats
         
-        embed = discord.Embed(title="AstroVoidHost System Statistics", color=discord.Color.blue())
+        embed = discord.Embed(title="CrashNodes System Statistics", color=discord.Color.blue())
         embed.add_field(name="VPS Instances", value=f"Total: {len(bot.db.get_all_vps())}\nRunning: {len([c for c in containers if c.status == 'running'])}", inline=True)
         embed.add_field(name="Docker Containers", value=f"Total: {len(containers)}\nRunning: {len([c for c in containers if c.status == 'running'])}", inline=True)
         embed.add_field(name="CPU Usage", value=f"{stats['cpu_usage']}%", inline=True)
@@ -1647,7 +1647,7 @@ async def vps_usage(ctx):
         total_disk = sum(vps['disk'] for vps in user_vps)
         total_restarts = sum(vps.get('restart_count', 0) for vps in user_vps)
         
-        embed = discord.Embed(title="Your AstroVoidHost VPS Usage", color=discord.Color.blue())
+        embed = discord.Embed(title="Your CrashNodes VPS Usage", color=discord.Color.blue())
         embed.add_field(name="Total VPS Instances", value=len(user_vps), inline=True)
         embed.add_field(name="Total Memory Allocated", value=f"{total_memory}GB", inline=True)
         embed.add_field(name="Total CPU Cores Allocated", value=total_cpu, inline=True)
@@ -1673,7 +1673,7 @@ async def global_stats(ctx):
         total_disk = sum(vps['disk'] for vps in all_vps.values())
         total_restarts = sum(vps.get('restart_count', 0) for vps in all_vps.values())
         
-        embed = discord.Embed(title="AstroVoidHost Global Usage Statistics", color=discord.Color.blue())
+        embed = discord.Embed(title="CrashNodes Global Usage Statistics", color=discord.Color.blue())
         embed.add_field(name="Total VPS Created", value=bot.db.get_stat('total_vps_created'), inline=True)
         embed.add_field(name="Total Restarts", value=bot.db.get_stat('total_restarts'), inline=True)
         embed.add_field(name="Current VPS Instances", value=len(all_vps), inline=True)
@@ -1952,7 +1952,7 @@ async def edit_vps(ctx, vps_id: str, memory: Optional[int] = None, cpu: Optional
                 vps['os_image'],
                 detach=True,
                 privileged=True,
-                hostname=f"AstroVoidHost-{vps_id}",
+                hostname=f"crashnodes-{vps_id}",
                 mem_limit=memory_bytes,
                 cpu_period=100000,
                 cpu_quota=cpu_quota,
@@ -1961,7 +1961,7 @@ async def edit_vps(ctx, vps_id: str, memory: Optional[int] = None, cpu: Optional
                 tty=True,
                 network=DOCKER_NETWORK,
                 volumes={
-                    f'AstroVoidHost-{vps_id}': {'bind': '/data', 'mode': 'rw'}
+                    f'crashnodes-{vps_id}': {'bind': '/data', 'mode': 'rw'}
                 },
                 restart_policy={"Name": "always"}
             )
@@ -2078,7 +2078,7 @@ async def reinstall_bot(ctx):
         return
 
     try:
-        await ctx.send("🔄 Reinstalling AstroVoidHost bot... This may take a few minutes.")
+        await ctx.send("🔄 Reinstalling CrashNodes bot... This may take a few minutes.")
         
         # Create Dockerfile for bot reinstallation
         dockerfile_content = f"""
@@ -2107,7 +2107,7 @@ CMD ["python", "bot.py"]
         
         # Build and run the bot in a container
         process = await asyncio.create_subprocess_exec(
-            "docker", "build", "-t", "AstroVoidHost-bot", "-f", "Dockerfile.bot", ".",
+            "docker", "build", "-t", "crashnodes-bot", "-f", "Dockerfile.bot", ".",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
@@ -2138,7 +2138,7 @@ class VPSManagementView(ui.View):
         if token:
             bot.db.remove_vps(token)
         
-        embed = discord.Embed(title=f"AstroVoidHost VPS Management - {self.vps_id}", color=discord.Color.red())
+        embed = discord.Embed(title=f"CrashNodes VPS Management - {self.vps_id}", color=discord.Color.red())
         embed.add_field(name="Status", value="🔴 Container Not Found", inline=True)
         embed.add_field(name="Note", value="This VPS instance is no longer available. Please create a new one.", inline=False)
         
@@ -2174,7 +2174,7 @@ class VPSManagementView(ui.View):
             if token:
                 bot.db.update_vps(token, {'status': 'running'})
             
-            embed = discord.Embed(title=f"AstroVoidHost VPS Management - {self.vps_id}", color=discord.Color.green())
+            embed = discord.Embed(title=f"CrashNodes VPS Management - {self.vps_id}", color=discord.Color.green())
             embed.add_field(name="Status", value="🟢 Running", inline=True)
             
             if vps:
@@ -2185,7 +2185,7 @@ class VPSManagementView(ui.View):
                 embed.add_field(name="Created", value=vps['created_at'], inline=True)
             
             await interaction.message.edit(embed=embed)
-            await interaction.followup.send("✅ AstroVoidHost VPS started successfully!", ephemeral=True)
+            await interaction.followup.send("✅ CrashNodes VPS started successfully!", ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"❌ Error starting VPS: {str(e)}", ephemeral=True)
 
@@ -2210,7 +2210,7 @@ class VPSManagementView(ui.View):
             if token:
                 bot.db.update_vps(token, {'status': 'stopped'})
             
-            embed = discord.Embed(title=f"AstroVoidHost VPS Management - {self.vps_id}", color=discord.Color.orange())
+            embed = discord.Embed(title=f"CrashNodes VPS Management - {self.vps_id}", color=discord.Color.orange())
             embed.add_field(name="Status", value="🔴 Stopped", inline=True)
             
             if vps:
@@ -2221,7 +2221,7 @@ class VPSManagementView(ui.View):
                 embed.add_field(name="Created", value=vps['created_at'], inline=True)
             
             await interaction.message.edit(embed=embed)
-            await interaction.followup.send("✅ AstroVoidHost VPS stopped successfully!", ephemeral=True)
+            await interaction.followup.send("✅ CrashNodes VPS stopped successfully!", ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"❌ Error stopping VPS: {str(e)}", ephemeral=True)
 
@@ -2270,7 +2270,7 @@ class VPSManagementView(ui.View):
                         # Send new SSH details to owner
                         try:
                             owner = await bot.fetch_user(int(vps["created_by"]))
-                            embed = discord.Embed(title=f"AstroVoidHost VPS Restarted - {self.vps_id}", color=discord.Color.blue())
+                            embed = discord.Embed(title=f"CrashNodes VPS Restarted - {self.vps_id}", color=discord.Color.blue())
                             embed.add_field(name="New SSH Session", value=f"```{ssh_session_line}```", inline=False)
                             await owner.send(embed=embed)
                         except:
@@ -2278,7 +2278,7 @@ class VPSManagementView(ui.View):
                 except:
                     pass
             
-            embed = discord.Embed(title=f"AstroVoidHost VPS Management - {self.vps_id}", color=discord.Color.green())
+            embed = discord.Embed(title=f"CrashNodes VPS Management - {self.vps_id}", color=discord.Color.green())
             embed.add_field(name="Status", value="🟢 Running", inline=True)
             
             if vps:
@@ -2290,7 +2290,7 @@ class VPSManagementView(ui.View):
                 embed.add_field(name="Restart Count", value=vps.get('restart_count', 0) + 1, inline=True)
             
             await interaction.message.edit(embed=embed, view=VPSManagementView(self.vps_id, container.id))
-            await interaction.followup.send("✅ AstroVoidHost VPS restarted successfully! New SSH details sent to owner.", ephemeral=True)
+            await interaction.followup.send("✅ CrashNodes VPS restarted successfully! New SSH details sent to owner.", ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"❌ Error restarting VPS: {str(e)}", ephemeral=True)
 
@@ -2352,7 +2352,7 @@ class OSSelectionView(ui.View):
             except Exception as e:
                 logger.error(f"Error removing old container: {e}")
 
-            status_msg = await interaction.followup.send("🔄 Reinstalling AstroVoidHost VPS... This may take a few minutes.", ephemeral=True)
+            status_msg = await interaction.followup.send("🔄 Reinstalling CrashNodes VPS... This may take a few minutes.", ephemeral=True)
             
             memory_bytes = vps['memory'] * 1024 * 1024 * 1024
 
@@ -2369,14 +2369,14 @@ class OSSelectionView(ui.View):
                     image_tag,
                     detach=True,
                     privileged=True,
-                    hostname=f"AstroVoidHost-{self.vps_id}",
+                    hostname=f"crashnodes-{self.vps_id}",
                     mem_limit=memory_bytes,
                     cpu_period=100000,
                     cpu_quota=int(vps['cpu'] * 100000),
                     cap_add=["ALL"],
                     network=DOCKER_NETWORK,
                     volumes={
-                        f'AstroVoidHost-{self.vps_id}': {'bind': '/data', 'mode': 'rw'}
+                        f'crashnodes-{self.vps_id}': {'bind': '/data', 'mode': 'rw'}
                     },
                     restart_policy={"Name": "always"}
                 )
@@ -2408,7 +2408,7 @@ class OSSelectionView(ui.View):
                     # Send new SSH details to owner
                     try:
                         owner = await bot.fetch_user(int(vps["created_by"]))
-                        embed = discord.Embed(title=f"AstroVoidHost VPS Reinstalled - {self.vps_id}", color=discord.Color.blue())
+                        embed = discord.Embed(title=f"CrashNodes VPS Reinstalled - {self.vps_id}", color=discord.Color.blue())
                         embed.add_field(name="New OS", value=image, inline=True)
                         embed.add_field(name="New SSH Session", value=f"```{ssh_session_line}```", inline=False)
                         embed.add_field(name="SSH Password", value=f"||{vps.get('password', 'Not set')}||", inline=False)
@@ -2418,10 +2418,10 @@ class OSSelectionView(ui.View):
             except Exception as e:
                 logger.error(f"Warning: Failed to start tmate session: {e}")
 
-            await status_msg.edit(content="✅ AstroVoidHost VPS reinstalled successfully!")
+            await status_msg.edit(content="✅ CrashNodes VPS reinstalled successfully!")
             
             try:
-                embed = discord.Embed(title=f"AstroVoidHost VPS Management - {self.vps_id}", color=discord.Color.green())
+                embed = discord.Embed(title=f"CrashNodes VPS Management - {self.vps_id}", color=discord.Color.green())
                 embed.add_field(name="Status", value="🟢 Running", inline=True)
                 embed.add_field(name="Memory", value=f"{vps['memory']}GB", inline=True)
                 embed.add_field(name="CPU", value=f"{vps['cpu']} cores", inline=True)
@@ -2440,7 +2440,7 @@ class OSSelectionView(ui.View):
             except:
                 try:
                     channel = interaction.channel
-                    await channel.send(f"❌ Error reinstalling AstroVoidHost VPS {self.vps_id}: {str(e)}")
+                    await channel.send(f"❌ Error reinstalling CrashNodes VPS {self.vps_id}: {str(e)}")
                 except:
                     logger.error(f"Failed to send error message: {e}")
 
@@ -2509,10 +2509,10 @@ class TransferVPSModal(ui.Modal, title='Transfer VPS'):
 
             bot.db.update_vps(token, {"created_by": str(new_owner.id)})
 
-            await interaction.response.send_message(f"✅ AstroVoidHost VPS {self.vps_id} has been transferred from {old_owner_name} to {new_owner_name}!", ephemeral=True)
+            await interaction.response.send_message(f"✅ CrashNodes VPS {self.vps_id} has been transferred from {old_owner_name} to {new_owner_name}!", ephemeral=True)
             
             try:
-                embed = discord.Embed(title="AstroVoidHost VPS Transferred to You", color=discord.Color.green())
+                embed = discord.Embed(title="CrashNodes VPS Transferred to You", color=discord.Color.green())
                 embed.add_field(name="VPS ID", value=self.vps_id, inline=True)
                 embed.add_field(name="Previous Owner", value=old_owner_name, inline=True)
                 embed.add_field(name="Memory", value=f"{vps['memory']}GB", inline=True)
@@ -2549,7 +2549,7 @@ async def manage_vps(ctx, vps_id: str):
 
         status = vps['status'].capitalize()
 
-        embed = discord.Embed(title=f"AstroVoidHost VPS Management - {vps_id}", color=discord.Color.blue())
+        embed = discord.Embed(title=f"CrashNodes VPS Management - {vps_id}", color=discord.Color.blue())
         embed.add_field(name="Status", value=f"{status} (Container: {container_status})", inline=True)
         embed.add_field(name="Memory", value=f"{vps['memory']}GB", inline=True)
         embed.add_field(name="CPU", value=f"{vps['cpu']} cores", inline=True)
@@ -2591,10 +2591,10 @@ async def transfer_vps_command(ctx, vps_id: str, new_owner: discord.Member):
 
         bot.db.update_vps(token, {"created_by": str(new_owner.id)})
 
-        await ctx.send(f"✅ AstroVoidHost VPS {vps_id} has been transferred from {ctx.author.name} to {new_owner.name}!")
+        await ctx.send(f"✅ CrashNodes VPS {vps_id} has been transferred from {ctx.author.name} to {new_owner.name}!")
 
         try:
-            embed = discord.Embed(title="AstroVoidHost VPS Transferred to You", color=discord.Color.green())
+            embed = discord.Embed(title="CrashNodes VPS Transferred to You", color=discord.Color.green())
             embed.add_field(name="VPS ID", value=vps_id, inline=True)
             embed.add_field(name="Previous Owner", value=ctx.author.name, inline=True)
             embed.add_field(name="Memory", value=f"{vps['memory']}GB", inline=True)
